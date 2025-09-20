@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL Shortener - Make Your Links Shorter</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+      }
+
+      .form-container {
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .url-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .url-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .shorten-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      .shorten-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .shorten-btn:active {
+        transform: translateY(0);
+      }
+
+      .result-container {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        display: none;
+      }
+
+      .result-container.show {
+        display: block;
+        animation: slideIn 0.5s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+
+      .short-url {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #e1e5e9;
+        font-family: "Courier New", monospace;
+        font-size: 1.1rem;
+        word-break: break-all;
+        margin-bottom: 15px;
+      }
+
+      .copy-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .copy-btn:hover {
+        background: #218838;
+        transform: translateY(-1px);
+      }
+
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .features {
+        margin-top: 40px;
+        text-align: left;
+      }
+
+      .features h3 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .feature-list {
+        list-style: none;
+      }
+
+      .feature-list li {
+        padding: 10px 0;
+        color: #666;
+        display: flex;
+        align-items: center;
+      }
+
+      .feature-list li::before {
+        content: "✓";
+        color: #28a745;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .loading {
+        display: none;
+      }
+
+      .loading.show {
+        display: inline-block;
+      }
+
+      .spinner {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* URL List Styles */
+      .url-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border-left: 4px solid #667eea;
+        text-align: left;
+      }
+
+      .url-item .original-url,
+      .url-item .short-url {
+        margin-bottom: 8px;
+      }
+
+      .url-item .original-url a,
+      .url-item .short-url a {
+        color: #667eea;
+        text-decoration: none;
+        word-break: break-all;
+      }
+
+      .url-item .original-url a:hover,
+      .url-item .short-url a:hover {
+        text-decoration: underline;
+      }
+
+      .url-stats {
+        display: flex;
+        gap: 15px;
+        color: #666;
+        font-size: 0.8rem;
+        margin-top: 10px;
+      }
+
+      .url-stats small {
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 12px;
+      }
+
+      .features p {
+        text-align: center;
+        color: #666;
+        margin-top: 20px;
+      }
+
+      .features p a {
+        color: #667eea;
+        text-decoration: none;
+      }
+
+      .features p a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="logo">🔗 URL Shortener</h1>
+      <p class="subtitle">Transform long URLs into short, shareable links</p>
+
+      <div class="form-container">
+        <form id="urlForm">
+          <div class="input-group">
+            <input
+              type="url"
+              id="urlInput"
+              class="url-input"
+              placeholder="Enter your long URL here..."
+              required
+            />
+          </div>
+          <button type="submit" class="shorten-btn" id="shortenBtn">
+            <span class="loading" id="loading">
+              <span class="spinner"></span>
+            </span>
+            <span id="btnText">Shorten URL</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="result-container" id="resultContainer">
+        <div class="result-label">Your shortened URL:</div>
+        <div class="short-url" id="shortUrl"></div>
+        <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="features">
+        <h3>Your Recent Links</h3>
+        <% if (urls && urls.length > 0) { %>
+        <ul class="feature-list">
+          <% urls.forEach(url => { %>
+          <li>
+            <div class="url-item">
+              <div class="original-url">
+                <strong>Original:</strong>
+                <a href="<%= url.redirectURL %>" target="_blank"
+                  ><%= url.redirectURL %></a
+                >
+              </div>
+              <div class="short-url">
+                <strong>Short:</strong>
+                <a href="/url/<%= url.shortId %>" target="_blank">
+                  /url/<%= url.shortId %>
+                </a>
+              </div>
+              <div class="url-stats">
+                <small
+                  >Clicks: <%= url.visitHistory ? url.visitHistory.length : 0
+                  %></small
+                >
+                <small
+                  >Created: <%= new Date(url.createdAt).toLocaleDateString()
+                  %></small
+                >
+              </div>
+            </div>
+          </li>
+          <% }) %>
+        </ul>
+        <% } else { %>
+        <p>
+          No URLs created yet. <a href="/login">Sign in</a> to see your URLs
+          here.
+        </p>
+        <% } %>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("urlForm");
+      const urlInput = document.getElementById("urlInput");
+      const shortenBtn = document.getElementById("shortenBtn");
+      const btnText = document.getElementById("btnText");
+      const loading = document.getElementById("loading");
+      const resultContainer = document.getElementById("resultContainer");
+      const shortUrl = document.getElementById("shortUrl");
+      const copyBtn = document.getElementById("copyBtn");
+      const errorMessage = document.getElementById("errorMessage");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const url = urlInput.value.trim();
+        if (!url) return;
+
+        // Show loading state
+        loading.classList.add("show");
+        btnText.textContent = "Shortening...";
+        shortenBtn.disabled = true;
+        resultContainer.classList.remove("show");
+        errorMessage.classList.remove("show");
+
+        try {
+          const response = await fetch("/url", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: url }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            const shortUrlText = `${window.location.origin}/url/${data.id}`;
+            shortUrl.textContent = shortUrlText;
+            resultContainer.classList.add("show");
+            urlInput.value = "";
+          } else {
+            showError(data.error || "Something went wrong");
+          }
+        } catch (error) {
+          showError("Network error. Please try again.");
+        } finally {
+          // Hide loading state
+          loading.classList.remove("show");
+          btnText.textContent = "Shorten URL";
+          shortenBtn.disabled = false;
+        }
+      });
+
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(shortUrl.textContent).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy to Clipboard";
+          }, 2000);
+        });
+      });
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add("show");
+      }
+    </script>
+  </body>
+</html>
