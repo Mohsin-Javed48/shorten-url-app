@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - URL Shortener</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 450px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+      }
+
+      .form-container {
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        position: relative;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .input-label {
+        display: block;
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+        background: #fafbfc;
+      }
+
+      .form-input:focus {
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-input.error {
+        border-color: #dc3545;
+        background: #fff5f5;
+      }
+
+      .error-message {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .login-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .login-btn:active {
+        transform: translateY(0);
+      }
+
+      .login-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .forgot-password {
+        text-align: right;
+        margin-bottom: 20px;
+      }
+
+      .forgot-password a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+      }
+
+      .forgot-password a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #e1e5e9;
+      }
+
+      .divider span {
+        padding: 0 20px;
+      }
+
+      .signup-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .signup-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+      }
+
+      .loading {
+        display: none;
+      }
+
+      .loading.show {
+        display: inline-block;
+      }
+
+      .spinner {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .success-message.show {
+        display: block;
+        animation: slideIn 0.5s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .back-link {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .back-link:hover {
+        transform: translateX(-5px);
+      }
+
+      .back-link::before {
+        content: "←";
+        margin-right: 5px;
+        font-size: 1.2rem;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .remember-me input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.1);
+      }
+
+      .remember-me label {
+        color: #666;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .demo-credentials {
+        background: #f8f9fa;
+        border: 1px solid #e1e5e9;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .demo-credentials h4 {
+        color: #333;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+
+      .demo-credentials p {
+        color: #666;
+        font-size: 0.8rem;
+        margin: 5px 0;
+      }
+
+      .demo-credentials strong {
+        color: #667eea;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/" class="back-link">Back to Home</a>
+
+    <div class="container">
+      <h1 class="logo">🔗 URL Shortener</h1>
+      <p class="subtitle">Welcome back! Sign in to your account</p>
+
+      <div class="demo-credentials">
+        <h4>Demo Credentials:</h4>
+        <p><strong>Email:</strong> demo@example.com</p>
+        <p><strong>Password:</strong> demo123</p>
+      </div>
+
+      <div class="form-container">
+        <form id="loginForm">
+          <div class="input-group">
+            <label for="email" class="input-label">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="Enter your email address"
+              required
+            />
+            <div class="error-message" id="emailError"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="password" class="input-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Enter your password"
+              required
+            />
+            <div class="error-message" id="passwordError"></div>
+          </div>
+
+          <div class="remember-me">
+            <input type="checkbox" id="rememberMe" name="rememberMe" />
+            <label for="rememberMe">Remember me</label>
+          </div>
+
+          <div class="forgot-password">
+            <a href="/forgot-password">Forgot your password?</a>
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <span class="loading" id="loading">
+              <span class="spinner"></span>
+            </span>
+            <span id="btnText">Sign In</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="success-message" id="successMessage"></div>
+
+      <div class="divider">
+        <span>Don't have an account?</span>
+      </div>
+
+      <p>
+        <a href="/signup" class="signup-link">Create a new account</a>
+      </p>
+    </div>
+
+    <script>
+      const form = document.getElementById("loginForm");
+      const loginBtn = document.getElementById("loginBtn");
+      const btnText = document.getElementById("btnText");
+      const loading = document.getElementById("loading");
+      const successMessage = document.getElementById("successMessage");
+
+      // Form validation
+      function validateForm() {
+        let isValid = true;
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        // Clear previous errors
+        clearErrors();
+
+        // Email validation
+        if (!email) {
+          showError("emailError", "Email is required");
+          isValid = false;
+        } else if (!isValidEmail(email)) {
+          showError("emailError", "Please enter a valid email address");
+          isValid = false;
+        }
+
+        // Password validation
+        if (!password) {
+          showError("passwordError", "Password is required");
+          isValid = false;
+        } else if (password.length < 6) {
+          showError("passwordError", "Password must be at least 6 characters");
+          isValid = false;
+        }
+
+        return isValid;
+      }
+
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      function showError(errorId, message) {
+        const errorElement = document.getElementById(errorId);
+        errorElement.textContent = message;
+        errorElement.classList.add("show");
+
+        const inputElement = errorElement.previousElementSibling;
+        if (inputElement && inputElement.classList.contains("form-input")) {
+          inputElement.classList.add("error");
+        }
+      }
+
+      function clearErrors() {
+        const errorElements = document.querySelectorAll(".error-message");
+        errorElements.forEach((element) => {
+          element.classList.remove("show");
+        });
+
+        const inputElements = document.querySelectorAll(".form-input");
+        inputElements.forEach((element) => {
+          element.classList.remove("error");
+        });
+      }
+
+      // Form submission
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+          return;
+        }
+
+        const formData = {
+          email: document.getElementById("email").value.trim(),
+          password: document.getElementById("password").value,
+          rememberMe: document.getElementById("rememberMe").checked,
+        };
+
+        // Show loading state
+        loading.classList.add("show");
+        btnText.textContent = "Signing In...";
+        loginBtn.disabled = true;
+        successMessage.classList.remove("show");
+
+        try {
+          const response = await fetch("/user/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            successMessage.textContent = `Welcome back, ${data.user.name}! Redirecting...`;
+            successMessage.classList.add("show");
+
+            // Redirect to home page after 2 seconds
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 2000);
+          } else {
+            const data = await response.json();
+            if (data.error.includes("email")) {
+              showError("emailError", data.error);
+            } else {
+              showError("passwordError", data.error);
+            }
+          }
+        } catch (error) {
+          showError("passwordError", "Network error. Please try again.");
+        } finally {
+          // Hide loading state
+          loading.classList.remove("show");
+          btnText.textContent = "Sign In";
+          loginBtn.disabled = false;
+        }
+      });
+
+      // Auto-fill demo credentials when clicking on demo section
+      document
+        .querySelector(".demo-credentials")
+        .addEventListener("click", () => {
+          document.getElementById("email").value = "demo@example.com";
+          document.getElementById("password").value = "demo123";
+          clearErrors();
+        });
+    </script>
+  </body>
+</html>
